@@ -43,6 +43,7 @@ import           Data.Morpheus.Types.Internal.AST
                                                 , isNullableWrapper
                                                 , Listable(..)
                                                 , Selectable(..)
+                                                , ScalarValue (String)
                                                 )
 
 import           Data.Morpheus.Types.Internal.Resolving
@@ -188,6 +189,10 @@ validateScalar ScalarDefinition { validateValue } value err = do
 
 validateEnum
   :: error -> [DataEnumValue] -> ResolvedValue -> Either error ValidValue
+validateEnum gqlError enumValues (Scalar (String x))
+  | x         `elem` tags = pure (Enum x)
+  | otherwise             = Left gqlError
+  where tags = map enumName enumValues
 validateEnum gqlError enumValues (Enum enumValue)
   | enumValue `elem` tags = pure (Enum enumValue)
   | otherwise             = Left gqlError
